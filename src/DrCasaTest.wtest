@@ -1,0 +1,15 @@
+import DrCasa.*
+
+describe "Enfermedades"{
+		var frank = new Persona()
+		var malaria800 = new EnfermedadInfecciosa()
+fixture{
+		malaria800.cantidadCelulasAmenazadas(800)
+	}
+
+test "Frank contrae enfermedades" {
+
+		frank.contraerEnfermedad(malaria800)
+		assert.that(frank.tiene(malaria800))
+	}
+}
