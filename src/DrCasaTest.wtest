@@ -1,15 +1,22 @@
 import DrCasa.*
 
 describe "Enfermedades"{
-		var frank = new Persona()
-		var malaria800 = new EnfermedadInfecciosa()
-fixture{
-		malaria800.cantidadCelulasAmenazadas(800)
+		var frank
+		var malaria800
+		var logan
+	fixture{
+		malaria800 = new EnfermedadInfecciosa(cantidadCelulasAmenazadas=800)
+		logan = new Persona(temperatura=36, cantidadCelulas=1000, factorSanguineo = "R")
+		frank = new Persona(temperatura=36, cantidadCelulas=3500000, factorSanguineo = "A")
 	}
 
-test "Frank contrae enfermedades" {
+	test "Frank contrae enfermedades" {
 
 		frank.contraerEnfermedad(malaria800)
 		assert.that(frank.tiene(malaria800))
+	}
+	test "rompe todo al donar"{
+		var transfusion = new Transfusion(donante=logan, receptor=frank, cantidadDeCelulas=2000)
+		assert.throwsExceptionLike(new TransfusionException(message="NO SE PUEDE DONAR"), {transfusion.realizar()})
 	}
 }
