@@ -1,39 +1,57 @@
-class EnfermedadInfecciosa {
+class Enfermedad { //Clase abstracta
 	var property cantidadCelulasAmenazadas = 0
+	
+	method atenuarEn(cantidadCelulas){
+		cantidadCelulasAmenazadas -= cantidadCelulas
+		}
+		
+	method recibirDosis (cantidadCelulas, unaPersona){
+		self.atenuarEn(cantidadCelulas)
+		if(cantidadCelulasAmenazadas <= 0){
+			unaPersona.curarse(self)
+		}
+	}
+	method aplicarEfecto(unaPersona)
+	method esAgresiva(cantidadCelulasPersona)
+}
+
+class EnfermedadInfecciosa inherits Enfermedad {
 
 	method reproducirse(){
 		cantidadCelulasAmenazadas *= 2
 	}
-	method aplicarEfecto(unaPersona){
+	override method aplicarEfecto(unaPersona){
 		unaPersona.aumentarTemperatura(cantidadCelulasAmenazadas/1000)
 	}
-	method esAgresiva(cantidadCelulasPersona){
+	override method esAgresiva(cantidadCelulasPersona){
 		return cantidadCelulasAmenazadas > cantidadCelulasPersona * 0.1
-	}
-	method atenuarEn(cantidadCelulas){
-		cantidadCelulasAmenazadas -= cantidadCelulas
 	}
 }
 
-class EnfermedadAutoinmune {
-	var cantidadCelulasAmenazadas = 0
+class EnfermedadAutoinmune inherits Enfermedad {
 	var diasQueAfectaste = 0
-	method aplicarEfecto(unaPersona){
+	
+	override method aplicarEfecto(unaPersona){
 		unaPersona.destruirCelulas(cantidadCelulasAmenazadas)
 		diasQueAfectaste ++
 	}
-	method esAgresiva(cantidadCelulas){
+	override method esAgresiva(cantidadCelulas){
 		return diasQueAfectaste > 30
 	}
-	method atenuarEn(cantidadCelulas){
-		cantidadCelulasAmenazadas -= cantidadCelulas
-	}
+
 }
 
 class Persona {
-	var enfermedades = #{}
-	var temperatura = 36.5
-	var cantidadCelulas = 0
+	const property enfermedades = #{} // Es const porque nunca cambia que sea un set
+	var property temperatura
+	var property cantidadCelulas
+	
+	constructor(_temperatura,_cantidadCelulas,_enfermedades){
+		temperatura = _temperatura
+		cantidadCelulas = _cantidadCelulas
+		enfermedades = _enfermedades
+	}
+	
 	method contraerEnfermedad(unaEnfermedad){
 		enfermedades.add(unaEnfermedad)
 	}
@@ -56,7 +74,10 @@ class Persona {
 		return enfermedades.filter({enfermedad => enfermedad.esAgresiva(cantidadCelulas)})
 	}
 	method aplicarDosis(unaDosis){
-		enfermedades.forEach({enfermedad => enfermedad.atenuarEn(unaDosis*15)})
+		enfermedades.forEach({enfermedad => enfermedad.atenuarEn(unaDosis*15,self)})
+	}
+	method curarse(unaEnfermedad) {
+		enfermedades.remove(unaEnfermedad)
 	}
 }
 
@@ -66,10 +87,15 @@ class Medico inherits Persona{
 	method atenderA(unaPersona){
 		unaPersona.aplicarDosis(dosis)
 	}
+	
+	override method contraerEnfermedad (unaEnfermedad){
+		super(unaEnfermedad) // Busca el mismo metodo en la clase de arriba
+		self.atenderA(self)
+	}	
 }
 
 class JefeDeDepartamento inherits Medico {
-	var subordinados = #{}
+	var property subordinados = #{}
 	override method atenderA(unaPersona){
 		subordinados.anyOne().atenderA(unaPersona)
 	}
